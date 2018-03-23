@@ -6,7 +6,7 @@
         </div>
         <div class="page__bd page__bd_spacing">
             <div class="weui-grids">
-                <router-link class="weui-grid" to="/wiki">
+                <router-link class="weui-grid" to="/wikis">
                     <div class="weui-grid__icon"><img src="/chrome/tracmobile/images/contract.png" /></div>
                     <p class="weui-grid__label">Wiki</p>
                 </router-link>
@@ -32,13 +32,19 @@
                 </router-link>
             </div>
         </div>
+        <div class="page__bd">
+            <tm-wiki :trac="trac" :jayson="jayson" wiki-id="WikiStart" :local="true"></tm-wiki>
+        </div>
     </div>
 </template>
 
 <script>
+    import TmWiki from "./tm-wiki";
+
     export default {
+        components: {TmWiki},
         name: "tm-index",
-        props: ['trac'],
+        props: ['trac', 'jayson'],
 
     }
 </script>

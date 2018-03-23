@@ -1,17 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:v-bind="http://vuejs.org/">
 <head>
     <meta charset="utf-8" />
     <title>${project.name or 'Trac'}</title>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no'/>
     <link rel="stylesheet" href="/chrome/tracmobile/weui.min.css"/>
-    <script type="javascript" src="/chrome/tracmobile/weui.min.js"></script>
+    <link rel="stylesheet" href="/chrome/tracmobile/tracmobile.css"/>
+    <script src="/chrome/tracmobile/weui.min.js"></script>
+    <script src="/chrome/common/js/jquery.js" ></script>
 </head>
 <body style="background-color: #f8f8f8; ">
 <div id="app">
     <div class="weui-tab container" id="container" style="height: 100vh;">
         <div class="weui-tab__panel">
-            <router-view></router-view>
+            <transition v-bind:name="transitionName">
+                <router-view class="main-view"></router-view>
+            </transition>
         </div>
         <div class="weui-tabbar">
             <router-link class="weui-tabbar__item" to="/"> <img class="weui-tabbar__icon" src="/chrome/tracmobile/images/home.png" />
