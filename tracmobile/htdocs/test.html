@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>${project.name or 'Trac'}</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no'/>
+    <link rel="stylesheet" href="/chrome/tracmobile/weui.min.css"/>
+    <script type="javascript" src="/chrome/tracmobile/weui.min.js"></script>
+</head>
+<body style="background-color: #f8f8f8; ">
+<div id="app">
+    <div class="weui-tab container" id="container" style="height: 100vh;">
+        <div class="weui-tab__panel">
+            <router-view></router-view>
+        </div>
+        <div class="weui-tabbar">
+            <router-link class="weui-tabbar__item" to="/"> <img class="weui-tabbar__icon" src="/chrome/tracmobile/images/home.png" />
+                <p class="weui-tabbar__label">Home</p></router-link>
+            <router-link class="weui-tabbar__item" to="/report"> <img class="weui-tabbar__icon" src="/chrome/tracmobile/images/tasks.png" />
+                <p class="weui-tabbar__label">Reports</p></router-link>
+            <router-link class="weui-tabbar__item" to="/search"><img class="weui-tabbar__icon" src="/chrome/tracmobile/images/schedule.png" />
+                <p class="weui-tabbar__label">Search</p></router-link>
+            <router-link class="weui-tabbar__item" to="/my"><img class="weui-tabbar__icon" src="/chrome/tracmobile/images/my.png" />
+                <p class="weui-tabbar__label">My</p></router-link>
+        </div>
+    </div>
+</div>
+<script>
+    window.tracdata = {
+        project: ${JSON(project)},
+        abs_href: ${JSON(abs_href.base)},
+        session: ${JSON(req.session)},
+        user: ${JSON(req.authname)},
+        fields: ${JSON(fields)},
+    };
+</script>
+<script src="/chrome/tracmobile/tracmobile.js"></script>
+</body>
+</html>
