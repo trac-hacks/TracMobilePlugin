@@ -1,39 +1,30 @@
 <template>
     <div>
         <tm-header text="Custom Query"></tm-header>
-        <slideout menu="#query-filter-menu" panel="#query-panel" side="right"
-                  :toggleSelectors="['.query-filter-button', '.query-filter-button2', '.query-filter-button3']" v-on:close="load">
-            <div id="query-filter-menu">
-                <div style="padding-top: 48px; padding-bottom: 77px;">
-                    <div class="weui-cells__title">Sort</div>
-                    <div class="weui-cells">
-                        <div class="weui-cell weui-cell_select weui-cell_select-after">
-                            <div class="weui-cell__hd"><label class="weui-label">Sort By</label></div>
-                            <div class="weui-cell__bd">
-                                <select class="weui-select" v-model="order" >
-                                    <option value="id">ID</option>
-                                    <option v-for="op in trac.fields" :value="op.name">{{op.label}}</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="weui-cell weui-cell_switch">
-                            <div class="weui-cell__bd"><label class="weui-label">Reverse</label></div>
-                            <div class="weui-cell__ft"><input class="weui-switch" type="checkbox" v-model="desc" /></div>
+        <tm-slideout @confirm="filterConfirm" @cancel="filterCancel">
+            <div slot="tm-slideout-menu">
+                <div class="weui-cells__title">Sort</div>
+                <div class="weui-cells">
+                    <div class="weui-cell weui-cell_select weui-cell_select-after">
+                        <div class="weui-cell__hd"><label class="weui-label">Sort By</label></div>
+                        <div class="weui-cell__bd">
+                            <select class="weui-select" v-model="order" >
+                                <option value="id">ID</option>
+                                <option v-for="op in trac.fields" :value="op.name">{{op.label}}</option>
+                            </select>
                         </div>
                     </div>
-                    <div class="weui-cells__title">Filter</div>
-                    <div class="weui-cells">
-                        <template v-for="field in getNontextareaFields()">
-                            <tm-ticket-attribute :field="field" :trac="trac" :ticket="filterTicketTemp"
-                                                 :protect="false"></tm-ticket-attribute>
-                        </template>
+                    <div class="weui-cell weui-cell_switch">
+                        <div class="weui-cell__bd"><label class="weui-label">Reverse</label></div>
+                        <div class="weui-cell__ft"><input class="weui-switch" type="checkbox" v-model="desc" /></div>
                     </div>
-                    <div class="query-filter-menu-buttons">
-                        <div class="view__button-area weui-flex">
-                            <a class="weui-btn weui-btn_primary weui-flex__item query-filter-button2" @click="filterConfirm">Confirm</a>
-                            <a class="weui-btn weui-btn_default weui-flex__item query-filter-button3" @click="filterCancel">Cancel</a>
-                        </div>
-                    </div>
+                </div>
+                <div class="weui-cells__title">Filter</div>
+                <div class="weui-cells">
+                    <template v-for="field in getNontextareaFields()">
+                        <tm-ticket-attribute :field="field" :trac="trac" :ticket="filterTicketTemp"
+                                             :protect="false"></tm-ticket-attribute>
+                    </template>
                 </div>
             </div>
             <div id="query-panel">
@@ -44,11 +35,11 @@
                                 <span>Ready to filter...</span>
                             </div>
                             <div v-for="(item, key) in filterTicket.attributes"
-                                 class="float-left query-box query-box-bordered">
+                                 class="float-left query-box query-box-bordered" @click="removeFilter" :for="key">
                                 {{key}} = {{item}}
                             </div>
                         </div>
-                        <div class="query-box query-filter-button query-box-bordered">
+                        <div class="query-box query-box-bordered tm-slideout-button">
                             <i class="weui-icon-search"></i>Filter
                         </div>
                     </div>
@@ -66,13 +57,13 @@
                     </div>
                 </div>
             </div>
-        </slideout>
+        </tm-slideout>
     </div>
 </template>
 
 <script>
     import TmHeader from "./tm-header";
-    import Slideout from 'vue-slideout';
+    import TmSlideout from './tm-slideout';
     import Ticket from "./ticket";
     import TmTicketAttribute from "./tm-ticket-attribute";
     import TmTickets from "./tm-tickets";
@@ -81,7 +72,7 @@
     export default {
         components: {
             TmTickets,
-            TmHeader, Slideout, TmTicketAttribute},
+            TmHeader, TmSlideout, TmTicketAttribute},
         name: "tm-query",
         props: ['trac', 'jayson'],
         data: function () {
@@ -97,8 +88,6 @@
         },
         created: function () {
             this.load();
-        },
-        computed: {
         },
         methods: {
             popupFilter: function () {
@@ -133,6 +122,11 @@
             filterCancel: function () {
                 this.filterTicketTemp.attributes = {};
                 Object.assign(this.filterTicketTemp.attributes, this.filterTicket.attributes);
+            },
+            removeFilter: function (event) {
+                this.$delete(this.filterTicket.attributes, event.target.getAttribute('for'));
+                this.$delete(this.filterTicketTemp.attributes, event.target.getAttribute('for'));
+                this.load();
             }
         }
     }
@@ -169,68 +163,8 @@
         float: left;
     }
 
-    .slideout-menu {
-        position: fixed;
-        top: 0;
-        bottom: 54px;
-        width: 256px;
-        overflow-y: scroll;
-        -webkit-overflow-scrolling: touch;
-        background-color: #ebebeb;
-        z-index: 0;
-        display: none;
-    }
-
-    .slideout-menu-left {
-        left: 0;
-    }
-
-    .slideout-menu-right {
-        right: 0;
-    }
-
-    .slideout-panel {
-        position: relative;
-        z-index: 1;
-        will-change: transform;
-        min-height: 100vh;
-        background-color: #f8f8f8;
-        box-shadow: 0.1em 0.15em 1em #999;
-    }
-
-    .slideout-open,
-    .slideout-open body,
-    .slideout-open .slideout-panel {
-        overflow: hidden;
-    }
-
-    .slideout-open .slideout-menu {
-        display: block;
-    }
-
     .weui-cells {
         background-color: transparent;
     }
 
-    .query-filter-menu-buttons {
-        position: fixed;
-        bottom: 54px;
-        width: 256px;
-        right: 0;
-        border-top: solid 1px #d9d9d9;
-        background-color: #ebebeb;
-    }
-
-    .view__button-area {
-        margin: 0 auto;
-        padding: 15px 0;
-    }
-
-    .view__button-area a {
-        margin: 0 20px;
-    }
-
-    .view__button-area a:last-child {
-        margin-left: 0;
-    }
 </style>

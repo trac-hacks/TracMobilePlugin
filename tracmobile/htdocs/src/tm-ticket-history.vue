@@ -53,4 +53,12 @@
     .weui-media-box__info {
         margin-top: 5px;
     }
+
+    .weui-media-box__desc {
+        color: black;
+    }
+
+    .weui-media-box__info {
+        color: #666;
+    }
 </style>
