@@ -2,10 +2,12 @@ from tracrpc.api import *
 from tracrpc.ticket import TicketRPC
 from trac.core import *
 from trac.ticket.report import Report, ReportModule
-
+from trac.timeline import ITimelineEventProvider
 
 class TracMobileRPC(Component):
     implements(IXMLRPCHandler)
+
+    timeline_provider = ExtensionPoint(ITimelineEventProvider)
 
     def xmlrpc_namespace(self):
         return 'tracmobile'
@@ -14,6 +16,7 @@ class TracMobileRPC(Component):
         yield 'REPORT_VIEW', ((list,),), self.getReports
         yield 'REPORT_VIEW', ((dict, int),), self.getReport
         yield None, ((list, list),), self.getTickets
+        yield 'TIMELINE_VIEW', ((list, int, int, list), ), self.getTimelineEvents
 
     def getReports(self, req):
         """
@@ -45,3 +48,9 @@ class TracMobileRPC(Component):
         tr = TicketRPC(self.env)
         return [tr.get(req, tid) for tid in tids]
 
+    def getTimelineEvents(self, req, start, end, filter):
+        """
+        Get timeline events
+        """
+
+        filters = self.timeline_provider.get_timeline_filters(req)
