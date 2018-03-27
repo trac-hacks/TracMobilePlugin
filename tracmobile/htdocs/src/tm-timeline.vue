@@ -5,13 +5,9 @@
             <div slot="tm-slideout-menu">
                 <div class="weui-cells__title">Event Type Filter:</div>
                 <div class="weui-cells">
-                    <div class="weui-cell weui-cell_switch">
-                        <div class="weui-cell__bd"><label class="weui-label">Ticket</label></div>
-                        <div class="weui-cell__ft"><input class="weui-switch" type="checkbox" v-model="filterTicket.ticket" /></div>
-                    </div>
-                    <div class="weui-cell weui-cell_switch">
-                        <div class="weui-cell__bd"><label class="weui-label">Wiki</label></div>
-                        <div class="weui-cell__ft"><input class="weui-switch" type="checkbox" v-model="filterTicket.wiki" /></div>
+                    <div class="weui-cell weui-cell_switch" v-for="(item, index) in filter" :key="index">
+                        <div class="weui-cell__bd"><label class="weui-label">{{index}}</label></div>
+                        <div class="weui-cell__ft"><input class="weui-switch" type="checkbox" v-model="filter[index]" /></div>
                     </div>
                 </div>
             </div>
@@ -30,15 +26,29 @@
                     </div>
                 </div>
                 <div>
+                    <div v-infinite-scroll="loadMore" infinite-scroll-disabled="busy" infinite-scroll-distance="10">
+                        <div class="weui-panel" v-for="dayEvents in events">
+                            <div class="weui-panel__hd">{{dayEvents[0].dateStr}}</div>
+                            <div class="weui-panel__bd">
+                                <div class="weui-media-box weui-media-box_appmsg" v-for="event in dayEvents">
+                                    <router-link class="weui-cell_access" :to="event.url">
+                                        <h4 class="weui-media-box__title"> <div v-html="event.title"></div> </h4>
+                                        <p class="weui-media-box__desc"> <span v-html="event.description"></span> </p>
+                                        <ul class="weui-media-box__info">
+                                            <li class="weui-media-box__info__meta">{{event.timeStr}}</li>
+                                            <li class="weui-media-box__info__meta">{{event.author}}</li>
+                                        </ul>
+                                    </router-link>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="weui-loadmore" v-if="busy">
                         <i class="weui-loading"></i>
                         <span class="weui-loadmore__tips">Loading</span>
                     </div>
                     <div v-else-if="error">
                         ERROR: {{error}}
-                    </div>
-                    <div v-else>
-                        
                     </div>
                 </div>
             </div>
@@ -48,7 +58,6 @@
 <script>
     import TmHeader from "./tm-header";
     import TmSlideout from './tm-slideout';
-    import querystring from "querystring";
 
     export default {
         components: {TmHeader, TmSlideout},
@@ -59,27 +68,58 @@
                 filter: {
                     ticket: true,
                     wiki: true,
+                    changeset: true,
+                    milestone: true,
                 },
+                events: [],
                 busy: false,
                 error: null,
+                currentDate: Date.now(),
             };
         },
         created: function () {
-            this.load();
+            this.loadMore();
+        },
+        computed: {
         },
         methods: {
-            load: function () {
-                this.ticketIds = [];
+            groupBy: function(xs, key) {
+                return xs.reduce(function(rv, x) {
+                    (rv[x[key]] = rv[x[key]] || []).push(x);
+                    return rv;
+                }, {});
+            },
+            loadMore: function () {
                 this.busy = true;
-                var queryObj = {order: this.order, desc: this.desc, max: 0};
-                Object.assign(queryObj, this.filterTicket.attributes);
-                var queryStr = querystring.stringify(queryObj);
-                this.jayson.request('ticket.query', [queryStr], (err, response) => {
+                var filterArray = Object.keys(this.filter).filter(i => this.filter[i] === true);
+                var date = this.currentDate;
+                var daysPerRequest = 2;
+                this.jayson.request('tracmobile.getTimelineEvents', [date*1000-1000*1000*60*60*24*daysPerRequest, date*1000, filterArray], (err, response) => {
                     this.busy = false;
                     if (err)  this.error = err;
                     else if (response.error) this.error = response.error;
-                    else this.ticketIds = response.result;
+                    else {
+                        if (response.result === []) {
+                            this.events.push({
+                                'title': 'No events in last 7 days.',
+                                'dateStr': date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate()
+                            })
+                        } else {
+                            response.result.forEach(i => {
+                                this.processDate(i);
+                            });
+                            var dict = this.groupBy(response.result, 'dateStr');
+                            Object.keys(dict).sort().reverse().forEach(i => this.events.push(dict[i]));
+                        }
+
+                        this.currentDate -= 1000*60*60*24*daysPerRequest;
+                    }
                 });
+            },
+            processDate: function (event) {
+                var d = new Date(event.date);
+                event.dateStr = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+                event.timeStr = d.getHours() + ':' + d.getMinutes();
             },
             filterConfirm: function () {
                 this.load();

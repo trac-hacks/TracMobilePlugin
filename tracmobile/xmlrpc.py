@@ -1,13 +1,16 @@
+from trac.util import to_datetime
+from trac.web.chrome import web_context
 from tracrpc.api import *
 from tracrpc.ticket import TicketRPC
 from trac.core import *
 from trac.ticket.report import Report, ReportModule
 from trac.timeline import ITimelineEventProvider
 
+
 class TracMobileRPC(Component):
     implements(IXMLRPCHandler)
 
-    timeline_provider = ExtensionPoint(ITimelineEventProvider)
+    event_providers = ExtensionPoint(ITimelineEventProvider)
 
     def xmlrpc_namespace(self):
         return 'tracmobile'
@@ -48,9 +51,28 @@ class TracMobileRPC(Component):
         tr = TicketRPC(self.env)
         return [tr.get(req, tid) for tid in tids]
 
-    def getTimelineEvents(self, req, start, end, filter):
+    def getTimelineEvents(self, req, start, end=None, filters=None):
         """
         Get timeline events
         """
+        from datetime import datetime
 
-        filters = self.timeline_provider.get_timeline_filters(req)
+        html_context = web_context(req)
+        html_context.set_hints(wiki_flavor='html',
+                               shorten_lines=True)
+
+        start_date = to_datetime(start, req.tz)
+        end_date = to_datetime(end, req.tz) if end is not None else to_datetime(None, req.tz)
+
+        results = []
+
+        for event_provider in self.event_providers:
+            available_filters = [item[0] for item in event_provider.get_timeline_filters(req)] or []
+            available_filters = filter(lambda i: i in filters, available_filters)
+            events = list(event_provider.get_timeline_events(req, start_date, end_date, available_filters))
+            results.extend([{'title': unicode(event_provider.render_timeline_event(html_context, 'title', e)),
+                        'description': unicode(event_provider.render_timeline_event(html_context, 'description', e)),
+                        'url': event_provider.render_timeline_event(html_context, 'url', e),
+                        'kind': e[0], 'date': str(e[1]), 'author': e[2]} for e in events])
+
+        return results
