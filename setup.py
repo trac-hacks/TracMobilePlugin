@@ -21,6 +21,10 @@ setup(
     author_email='cauliflower.kan@gmail.com',
     author='Cauly Kan',
     package_data={ 'tracmobile': ['htdocs/*.js', 'htdocs/images/*.*', 'htdocs/*.css', 'htdocs/*.html'] },
+    install_requires=['Trac'],
+    extras_require={
+        'tracrpc': 'TracXMLRPC >= 1.1.0',
+    },
     entry_points={
         'trac.plugins': [
             'TracMobilePlugin.api = tracmobile.api',
