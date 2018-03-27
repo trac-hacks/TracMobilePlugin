@@ -20,8 +20,8 @@ class TracMobilePlugin(Component):
                or req.path_info == '/mobile'
 
     def process_request(self, req):
-        if req.path_info == '/' and MobileDetect(req).is_mobile():
-            req.redict('/mobile')
+        if req.path_info == '/' and MobileDetect(useragent=req.get_header('user-agent')).is_mobile():
+            req.redirect('/mobile')
         else:
             ts = TicketSystem(self.env)
             fields = ts.get_ticket_fields()
