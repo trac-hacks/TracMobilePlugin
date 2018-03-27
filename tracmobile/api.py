@@ -1,8 +1,9 @@
+import inspect
+
 from trac.core import *
 from trac.web import IRequestHandler
 from trac.web.chrome import ITemplateProvider
 from trac.ticket import TicketSystem
-from mobiledetect import MobileDetect
 import json
 
 import pkg_resources
@@ -16,12 +17,27 @@ class TracMobilePlugin(Component):
 
     # IRequestHandler
     def match_request(self, req):
-        return (req.path_info == '/' and MobileDetect(useragent=req.get_header('user-agent')).is_mobile()) \
-               or req.path_info == '/mobile'
+        result = False
+        try:
+            from mobiledetect import MobileDetect
+            if req.path_info == '/' and MobileDetect(useragent=req.get_header('user-agent')).is_mobile():
+                result = True
+        except ImportError:
+            self.log.info('For enabling mobile detection, you need to install pymobiledetect package.')
+
+        if req.path_info == '/mobile':
+            result = True
+
+        return result
 
     def process_request(self, req):
-        if req.path_info == '/' and MobileDetect(useragent=req.get_header('user-agent')).is_mobile():
-            req.redirect('/mobile')
+        if req.path_info == '/':
+            try:
+                from mobiledetect import MobileDetect
+                if MobileDetect(useragent=req.get_header('user-agent')).is_mobile():
+                    req.redirect('/mobile')
+            except ImportError:
+                pass
         else:
             ts = TicketSystem(self.env)
             fields = ts.get_ticket_fields()

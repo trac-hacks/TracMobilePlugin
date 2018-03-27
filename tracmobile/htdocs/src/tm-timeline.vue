@@ -75,10 +75,11 @@
                 busy: false,
                 error: null,
                 currentDate: Date.now(),
+                daysPerRequest: 7
             };
         },
         created: function () {
-            this.loadMore();
+            this.load();
         },
         computed: {
         },
@@ -89,21 +90,27 @@
                     return rv;
                 }, {});
             },
+            load: function () {
+                this.currentDate = Date.now();
+                this.events = [];
+                this.loadMore();
+            },
             loadMore: function () {
                 this.busy = true;
                 var filterArray = Object.keys(this.filter).filter(i => this.filter[i] === true);
                 var date = this.currentDate;
-                var daysPerRequest = 2;
-                this.jayson.request('tracmobile.getTimelineEvents', [date*1000-1000*1000*60*60*24*daysPerRequest, date*1000, filterArray], (err, response) => {
+                this.jayson.request('tracmobile.getTimelineEvents', [date*1000-1000*1000*60*60*24*this.daysPerRequest, date*1000, filterArray], (err, response) => {
                     this.busy = false;
                     if (err)  this.error = err;
                     else if (response.error) this.error = response.error;
                     else {
-                        if (response.result === []) {
-                            this.events.push({
-                                'title': 'No events in last 7 days.',
-                                'dateStr': date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate()
-                            })
+                        if (response.result.length === 0) {
+                            var d = new Date(date);
+                            this.events.push([{
+                                'title': 'No events in last ' + this.daysPerRequest + ' days.',
+                                'description': '', 'url': '',
+                                'dateStr': d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate()
+                            }]);
                         } else {
                             response.result.forEach(i => {
                                 this.processDate(i);
@@ -112,7 +119,7 @@
                             Object.keys(dict).sort().reverse().forEach(i => this.events.push(dict[i]));
                         }
 
-                        this.currentDate -= 1000*60*60*24*daysPerRequest;
+                        this.currentDate -= 1000*60*60*24*this.daysPerRequest;
                     }
                 });
             },
@@ -125,7 +132,7 @@
                 this.load();
             },
             filterCancel: function () {
-                this.load();
+                //this.load();
             },
             removeFilter: function (event) {
                 this.filter[event.target.getAttribute('for')] = false;
