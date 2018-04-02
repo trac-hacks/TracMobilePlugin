@@ -11,6 +11,7 @@ import TmQuery from './tm-query';
 import TmWiki from './tm-wiki';
 import TmWikis from './tm-wikis';
 import TmTimeline from './tm-timeline';
+import TmNewTicket from './tm-newticket';
 
 Vue.use(VueRouter);
 Vue.use(VueInfiniteScroll);
@@ -53,6 +54,11 @@ const routes = [
         path: '/timeline',
         name: 'timeline',
         component: TmTimeline,
+        props: true
+    }, {
+        path: '/newticket',
+        name: 'newticket',
+        component: TmNewTicket,
         props: true
     }
 ];
