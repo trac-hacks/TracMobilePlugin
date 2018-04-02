@@ -12,6 +12,7 @@ import TmWiki from './tm-wiki';
 import TmWikis from './tm-wikis';
 import TmTimeline from './tm-timeline';
 import TmNewTicket from './tm-newticket';
+import TmSearch from './tm-search';
 
 Vue.use(VueRouter);
 Vue.use(VueInfiniteScroll);
@@ -59,6 +60,11 @@ const routes = [
         path: '/newticket',
         name: 'newticket',
         component: TmNewTicket,
+        props: true
+    }, {
+        path: '/search',
+        name: 'search',
+        component: TmSearch,
         props: true
     }
 ];
