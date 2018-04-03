@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import VueInfiniteScroll from 'vue-infinite-scroll';
+import VueCookie from 'vue-cookie';
 import Jayson from '../jayson'
 
 import TmIndex from './tm-index';
@@ -13,9 +14,12 @@ import TmWikis from './tm-wikis';
 import TmTimeline from './tm-timeline';
 import TmNewTicket from './tm-newticket';
 import TmSearch from './tm-search';
+import TmLogin from './tm-login';
+import TmMy from './tm-my';
 
 Vue.use(VueRouter);
 Vue.use(VueInfiniteScroll);
+Vue.use(VueCookie);
 
 const routes = [
     {
@@ -66,6 +70,16 @@ const routes = [
         name: 'search',
         component: TmSearch,
         props: true
+    }, {
+        path: '/login',
+        name: 'login',
+        component: TmLogin,
+        props: true
+    }, {
+        path: '/my',
+        name: 'my',
+        component: TmMy,
+        props: true
     }
 ];
 
@@ -87,6 +101,15 @@ router.beforeEach((to, from, next) => {
 const app = new Vue({
     router: router,
     data: data,
+    created: function () {
+        var sessionUrl = this.$cookie.get('tracmobile-session');
+        var user = this.$cookie.get('tracmobile-user');
+        if (sessionUrl && user) {
+            this.jayson = new Jayson.client.http(sessionUrl);
+            this.trac.user = user;
+            this.trac.isLogin = true;
+        }
+    },
     watch: {
         '$route' (to, from) {
             const toDepth = to.path.split('/').length
@@ -94,6 +117,15 @@ const app = new Vue({
             this.transitionName = toDepth < fromDepth ? 'slide-right' : 'slide-left'
         }
     }
+});
+
+app.$on('login', function(newJayson, user) {
+    console.log('user login: ' + user);
+    this.trac.isLogin = true;
+    this.trac.user = user;
+    this.$cookie.set('tracmobile-session', newJayson.options.href, '1h');
+    this.$cookie.set('tracmobile-user', user, '1h');
+    this.jayson = newJayson;
 });
 
 app.$mount("#app");

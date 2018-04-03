@@ -12,6 +12,7 @@
   "dependencies": {
     "querystring": "^0.2.0",
     "vue": "^2.5.11",
+    "vue-cookie": "^1.1.4",
     "vue-infinite-scroll": "^2.0.2",
     "vue-router": "^3.0.1",
     "vue-slideout": "^1.7.0"
