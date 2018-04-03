@@ -16,12 +16,29 @@
                                 <div class="weui-cell__bd weui-cell_primary">
                                     <p>My active tickets</p>
                                 </div>
+                                <span class="weui-cell__ft"></span>
                             </router-link>
                             <router-link class="weui-cell weui-cell_access" :to="'/query?owner=' + trac.user">
                                 <div class="weui-cell__bd weui-cell_primary">
                                     <p>My tickets</p>
                                 </div>
+                                <span class="weui-cell__ft"></span>
                             </router-link>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="weui-panel">
+                <div class="weui-panel__hd">
+                    Account
+                </div>
+                <div class="weui-panel__bd">
+                    <div class="weui-media-box weui-media-box_small-appmsg">
+                        <div class="weui-cell weui-cell_access" @click="logout">
+                            <div class="weui-cell__bd weui-cell_primary">
+                                <p>Logout</p>
+                            </div>
+                            <span class="weui-cell__ft"></span>
                         </div>
                     </div>
                 </div>
@@ -36,6 +53,12 @@
         props: ['trac', 'jayson'],
         created: function () {
             if (!this.trac.isLogin) {
+                this.$router.push('/login');
+            }
+        },
+        methods: {
+            logout: function () {
+                this.$router.app.$emit('logout');
                 this.$router.push('/login');
             }
         }

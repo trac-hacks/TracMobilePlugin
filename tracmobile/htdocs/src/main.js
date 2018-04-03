@@ -128,4 +128,12 @@ app.$on('login', function(newJayson, user) {
     this.jayson = newJayson;
 });
 
+app.$on('logout', function () {
+    this.jayson = new Jayson.client.http(this.trac.abs_href + "/rpc");
+    this.trac.user = null;
+    this.trac.isLogin = false;
+    this.$cookie.delete('tracmobile-user');
+    this.$cookie.delete('tracmobile-session');
+});
+
 app.$mount("#app");
