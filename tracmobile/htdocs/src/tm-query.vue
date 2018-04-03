@@ -87,12 +87,14 @@
             };
         },
         created: function () {
+            var obj = this.$route.query;
+            delete obj.order;
+            delete obj.desc;
+            delete obj.max;
+            this.filterTicket.attributes = this.filterTicketTemp.attributes = obj;
             this.load();
         },
         methods: {
-            popupFilter: function () {
-
-            },
             getNontextareaFields() {
                 return this.trac.fields.filter(function (i) {
                     return i.type !== 'textarea';
@@ -101,12 +103,17 @@
             getFieldLabel: function (field) {
                 return this.trac.fields.find(i => i.name == field).label;
             },
-            load: function () {
-                this.ticketIds = [];
-                this.busy = true;
+            getQueryStr: function () {
                 var queryObj = {order: this.order, desc: this.desc, max: 0};
                 Object.assign(queryObj, this.filterTicket.attributes);
                 var queryStr = querystring.stringify(queryObj);
+                return queryStr;
+            },
+            load: function () {
+                this.ticketIds = [];
+                this.busy = true;
+                var queryStr = this.getQueryStr();
+                this.$router.replace("?" + queryStr);
                 this.jayson.request('ticket.query', [queryStr], (err, response) => {
                     this.busy = false;
                     if (err)  this.error = err;

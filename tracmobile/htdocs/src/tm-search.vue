@@ -108,11 +108,6 @@
         mounted: function () {
             weui.searchBar('#search_bar');
         },
-        watch: {
-            search: function () {
-                this.$router.push({query: {q: this.search}});
-            }
-        },
         methods: {
             filterConfirm: function () {
                 this.load();
@@ -126,6 +121,7 @@
             },
             load: function () {
                 this.busy = true;
+                this.$router.replace({query: {q: this.search}});
 
                 var filterArray = Object.keys(this.filter).filter(i => this.filter[i] === true);
                 this.jayson.request('search.performSearch', [this.search, filterArray], (err, response) =>
