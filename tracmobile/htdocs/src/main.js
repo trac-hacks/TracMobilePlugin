@@ -16,6 +16,7 @@ import TmNewTicket from './tm-newticket';
 import TmSearch from './tm-search';
 import TmLogin from './tm-login';
 import TmMy from './tm-my';
+import TmRoadmaps from './tm-roadmaps';
 
 Vue.use(VueRouter);
 Vue.use(VueInfiniteScroll);
@@ -79,6 +80,11 @@ const routes = [
         path: '/my',
         name: 'my',
         component: TmMy,
+        props: true
+    }, {
+        path: '/roadmap',
+        name: 'roadmap',
+        component: TmRoadmaps,
         props: true
     }
 ];

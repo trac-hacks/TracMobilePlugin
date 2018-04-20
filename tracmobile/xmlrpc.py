@@ -27,7 +27,21 @@ class TracMobileRPC(Component):
         """
         reports = list(Report.select(self.env))
         return [{"id": r.id, "title": r.title, "description": r.description} for r in reports]
-
+    def getReport(self, req, rid):
+        """
+        Get report detail and matching tickets
+        """
+        rid = int(rid)
+        rm = ReportModule(self.env)
+        r = Report(self.env, rid)
+        title, description, sql = r.title, r.description, r.query
+        cols, rows, do_, not_, care = rm.execute_paginated_report(req, rid, sql, {}, 0, 0)
+        tickets = []
+        if 'ticket' in cols:
+            for i in rows:
+                tickets.append(i[cols.index('ticket')])
+        return {"report": {"id": r.id, "title": r.title, "description": r.description},
+                "tickets": tickets}
     def getReport(self, req, rid):
         """
         Get report detail and matching tickets
